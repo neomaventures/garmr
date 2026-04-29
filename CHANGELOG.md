@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-04-29
+
+### Changed
+- Migrated internal test infrastructure to `@neoma/fixtures` 0.2.1, replacing local test fixture code with shared package equivalents
+
 ## [0.9.0] - 2026-04-16
 
 ### Added
@@ -157,7 +162,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Setup script for placeholder replacement
 - Comprehensive README documentation
 
-[Unreleased]: https://github.com/shipdventures/neoma-garmr/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/shipdventures/neoma-garmr/compare/v0.9.1...HEAD
+[0.9.1]: https://github.com/shipdventures/neoma-garmr/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/shipdventures/neoma-garmr/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/shipdventures/neoma-garmr/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/shipdventures/neoma-garmr/compare/v0.6.0...v0.7.0
