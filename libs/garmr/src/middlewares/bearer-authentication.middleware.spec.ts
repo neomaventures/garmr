@@ -1,10 +1,10 @@
 import { faker } from "@faker-js/faker"
 import { InvalidCredentialsException } from "@lib/exceptions/invalid-credentials.exception"
 import { AuthenticationService } from "@lib/services/authentication.service"
+import { express } from "@neoma/fixtures"
 import { LoggerService } from "@nestjs/common"
 import { TestingModule, Test } from "@nestjs/testing"
 import { Request, Response } from "express"
-import { express } from "fixtures/fakes/express"
 import * as jwt from "jsonwebtoken"
 import { v4 } from "uuid"
 

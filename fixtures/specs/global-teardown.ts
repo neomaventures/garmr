@@ -1,6 +1,7 @@
-import { execSync } from "child_process"
+import { stopMailpit } from "@neoma/fixtures/docker"
+
+const NODE_ENV = process.env.NODE_ENV || "specs"
 
 export default async (): Promise<void> => {
-  const NODE_ENV = process.env.NODE_ENV || "specs"
-  execSync(`docker rm -f garmr-mailpit-${NODE_ENV}`, { stdio: "ignore" })
+  await stopMailpit({ prefix: `garmr-${NODE_ENV}` })
 }

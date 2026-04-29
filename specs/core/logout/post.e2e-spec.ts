@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker"
+import { MailpitClient } from "@neoma/fixtures/mailpit"
 import { managedAppInstance } from "@neoma/managed-app"
 import { HttpStatus } from "@nestjs/common"
-import { mailpit } from "fixtures/email/mailpit"
 import {
   authenticateViaEmail,
   extractCookieValue,
@@ -9,6 +9,7 @@ import {
 import request from "supertest"
 
 const { NO_CONTENT } = HttpStatus
+const mailpit = new MailpitClient(process.env.MAILPIT_API!)
 
 const appModules: [string, string][] = [
   ["forRoot", "src/core/app.module.ts#AppModule"],

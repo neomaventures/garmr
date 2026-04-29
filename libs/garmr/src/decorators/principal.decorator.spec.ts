@@ -1,8 +1,7 @@
 import { faker } from "@faker-js/faker"
+import { executionContext, express } from "@neoma/fixtures"
 import { ROUTE_ARGS_METADATA } from "@nestjs/common/constants"
 import { CustomParamFactory, ExecutionContext } from "@nestjs/common/interfaces"
-import { express } from "fixtures/fakes/express"
-import { executionContext } from "fixtures/fakes/nestjs"
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm"
 
 import { Authenticatable } from "../interfaces/authenticatable.interface"

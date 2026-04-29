@@ -1,9 +1,9 @@
 import { faker } from "@faker-js/faker"
+import { MailpitClient } from "@neoma/fixtures/mailpit"
 import { DynamicModule } from "@nestjs/common"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { Test, TestingModule } from "@nestjs/testing"
 import { getRepositoryToken, TypeOrmModule } from "@nestjs/typeorm"
-import { mailpit } from "fixtures/email/mailpit"
 import { Column, Entity, PrimaryGeneratedColumn, Repository } from "typeorm"
 
 import { GarmrAuthenticatedEvent } from "../events/garmr-authenticated.event"
@@ -16,6 +16,8 @@ import { Authenticatable } from "../interfaces/authenticatable.interface"
 
 import { MAGIC_LINK_AUDIENCE, MagicLinkService } from "./magic-link.service"
 import { TokenService } from "./token.service"
+
+const mailpit = new MailpitClient(process.env.MAILPIT_API!)
 
 const welcomeSubject = "Welcome to MyApp"
 const welcomeHtml =
@@ -48,8 +50,8 @@ registrations.forEach(([name, register]) => {
     const secret = faker.internet.password()
 
     const mailerOptions = (): MailerOptions => ({
-      host: process.env.MAILPIT_HOST!,
-      port: parseInt(process.env.MAILPIT_PORT!),
+      host: process.env.SMTP_HOST!,
+      port: parseInt(process.env.SMTP_PORT!),
       from,
       welcome: { subject: welcomeSubject, html: welcomeHtml },
       welcomeBack: {

@@ -1,8 +1,10 @@
 import { Server } from "http"
 
+import { MailpitClient } from "@neoma/fixtures/mailpit"
 import { INestApplication } from "@nestjs/common"
-import { mailpit } from "fixtures/email/mailpit"
 import request from "supertest"
+
+const mailpit = new MailpitClient(process.env.MAILPIT_API!)
 
 export interface AuthResult {
   /** The session JWT from the response body */
@@ -32,7 +34,9 @@ export const authenticateViaEmail = async (
 
   const { messages } = await mailpit.messages()
   const message = await mailpit.message(messages[0].ID as string)
-  const verificationUrl = message.Text.match(/[a-z]+[:.].*?(?=\s)/)[0] as string
+  const verificationUrl = message.Text.match(
+    /[a-z]+[:.].*?(?=\s)/,
+  )![0] as string
   const magicLinkToken = verificationUrl.substring(
     verificationUrl.indexOf("=") + 1,
   )
