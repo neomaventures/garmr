@@ -18,8 +18,8 @@ import { User } from "./user.entity"
       expiresIn: "1h",
       entity: User,
       mailer: {
-        host: process.env.MAILPIT_HOST!,
-        port: parseInt(process.env.MAILPIT_PORT!),
+        host: process.env.SMTP_HOST!,
+        port: parseInt(process.env.SMTP_PORT!),
         from: process.env.MAGIC_LINK_FROM!,
         welcome: {
           subject: process.env.MAGIC_LINK_WELCOME_SUBJECT!,

@@ -1,13 +1,12 @@
 import { createHmac } from "crypto"
 
+import { executionContext, express } from "@neoma/fixtures"
 import {
   ExecutionContext,
   InternalServerErrorException,
   UnauthorizedException,
 } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
-import { express } from "fixtures/fakes/express"
-import { executionContext } from "fixtures/fakes/nestjs"
 
 import { GarmrOptions, GARMR_OPTIONS } from "../garmr.options"
 

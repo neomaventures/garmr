@@ -1,9 +1,8 @@
 import { faker } from "@faker-js/faker"
+import { executionContext, express, type MockRequest } from "@neoma/fixtures"
 import { ExecutionContext, UnauthorizedException } from "@nestjs/common"
 import { Reflector } from "@nestjs/core"
 import { Test, TestingModule } from "@nestjs/testing"
-import { express, MockRequest } from "fixtures/fakes/express"
-import { executionContext } from "fixtures/fakes/nestjs"
 
 import { RequiresAnyPermission } from "../decorators/requires-any-permission.decorator"
 import { RequiresPermission } from "../decorators/requires-permission.decorator"

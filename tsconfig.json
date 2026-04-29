@@ -11,7 +11,7 @@
     "outDir": "./dist",
     "incremental": true,
     "skipLibCheck": true,
-    "types": ["node", "jest"],
+    "types": ["node", "jest", "@neoma/fixtures/matchers"],
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,

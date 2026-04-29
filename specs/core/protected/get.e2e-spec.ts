@@ -1,12 +1,13 @@
 import { faker } from "@faker-js/faker"
+import { MailpitClient } from "@neoma/fixtures/mailpit"
 import { managedAppInstance } from "@neoma/managed-app"
 import { HttpStatus } from "@nestjs/common"
-import { mailpit } from "fixtures/email/mailpit"
 import { authenticateViaEmail } from "fixtures/fakes/magic-link"
 import request from "supertest"
 import { DataSource } from "typeorm"
 
 const { OK, UNAUTHORIZED, FORBIDDEN } = HttpStatus
+const mailpit = new MailpitClient(process.env.MAILPIT_API!)
 
 const UNAUTHORIZED_BODY = {
   statusCode: UNAUTHORIZED,

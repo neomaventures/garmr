@@ -3,14 +3,14 @@
   "rootDir": ".",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
-  "setupFilesAfterEnv": ["jest-extended/all"],
+  "setupFilesAfterEnv": ["jest-extended/all", "@neoma/fixtures/matchers"],
   "globalSetup": "<rootDir>/../fixtures/e2e/global-setup.ts",
   "globalTeardown": "<rootDir>/../fixtures/e2e/global-teardown.ts",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
   "moduleNameMapper": {
-    "fixtures/(.*)$": "<rootDir>/../fixtures/$1",
+    "^fixtures/(.*)$": "<rootDir>/../fixtures/$1",
     "@lib/(.*)$": "<rootDir>/../libs/garmr/src/$1",
     "@lib": "<rootDir>/../libs/garmr/src"
   }

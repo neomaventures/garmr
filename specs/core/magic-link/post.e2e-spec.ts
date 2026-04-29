@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker"
+import { MailpitClient } from "@neoma/fixtures/mailpit"
 import { managedAppInstance } from "@neoma/managed-app"
 import { HttpStatus } from "@nestjs/common"
-import { mailpit } from "fixtures/email/mailpit"
 import { credentials } from "fixtures/fakes/credentials"
 import * as jwt from "jsonwebtoken"
 import request from "supertest"
@@ -9,6 +9,7 @@ import { DataSource } from "typeorm"
 
 const { ACCEPTED, BAD_REQUEST } = HttpStatus
 const FIFTEEN_MINUTES = 900
+const mailpit = new MailpitClient(process.env.MAILPIT_API!)
 
 const appModules: [string, string][] = [
   ["forRoot", "src/core/app.module.ts#AppModule"],
@@ -58,7 +59,7 @@ appModules.forEach(([name, modulePath]) => {
         // Includes the correct url with token query parameter.
         const verificationUrl = message.Text.match(
           /[a-z]+[:.].*?(?=\s)/,
-        )[0] as string
+        )![0] as string
 
         // Base url is correct
         expect(verificationUrl).toContain(process.env.APP_URL!)
@@ -124,7 +125,7 @@ appModules.forEach(([name, modulePath]) => {
         // Includes the correct url with token query parameter.
         const verificationUrl = message.Text.match(
           /[a-z]+[:.].*?(?=\s)/,
-        )[0] as string
+        )![0] as string
 
         // Base url is correct
         expect(verificationUrl).toContain(process.env.APP_URL!)

@@ -1,12 +1,11 @@
 import { faker } from "@faker-js/faker"
+import { executionContext, express, type MockRequest } from "@neoma/fixtures"
 import {
   ExecutionContext,
   HttpStatus,
   UnauthorizedException,
 } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
-import { express, MockRequest } from "fixtures/fakes/express"
-import { executionContext } from "fixtures/fakes/nestjs"
 
 import { UnauthorizedRedirectException } from "../exceptions/unauthorized-redirect.exception"
 
