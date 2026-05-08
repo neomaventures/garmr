@@ -31,24 +31,53 @@ export interface MagicLinkVerifyResult<T extends Authenticatable> {
 
 @Injectable()
 export class MagicLinkService {
-  private readonly transport: Transporter
-  private readonly mailer: MailerOptions
+  private transport?: Transporter
 
   public constructor(
     @Inject(GARMR_OPTIONS) private readonly options: GarmrOptions,
     private readonly tokenService: TokenService,
     private readonly datasource: DataSource,
     private readonly eventEmitter: EventEmitter2,
-  ) {
-    this.mailer = this.options.mailer
-    this.transport = createTransport({
-      host: this.mailer.host,
-      port: this.mailer.port,
-      auth: this.mailer.auth,
-    })
+  ) {}
+
+  /**
+   * Returns the mailer options, throwing if magic link is not configured.
+   *
+   * @returns The mailer options from the magicLink configuration
+   * @throws {Error} If magicLink is not configured in GarmrOptions
+   */
+  private getMailer(): MailerOptions {
+    const mailer = this.options.magicLink?.mailer
+    if (!mailer) {
+      throw new Error(
+        "Magic link is not configured. Provide magicLink.mailer in GarmrOptions to use MagicLinkService.",
+      )
+    }
+    return mailer
+  }
+
+  /**
+   * Returns the nodemailer transport, lazily creating it on first use.
+   *
+   * @returns The nodemailer Transporter instance
+   * @throws {Error} If magicLink is not configured in GarmrOptions
+   */
+  private getTransport(): Transporter {
+    if (!this.transport) {
+      const mailer = this.getMailer()
+      this.transport = createTransport({
+        host: mailer.host,
+        port: mailer.port,
+        auth: mailer.auth,
+      })
+    }
+    return this.transport
   }
 
   public async send(email: string): Promise<void> {
+    const mailer = this.getMailer()
+    const transport = this.getTransport()
+
     const { token } = this.tokenService.issue(
       { email, aud: MAGIC_LINK_AUDIENCE },
       { expiresIn: "15m" },
@@ -61,11 +90,11 @@ export class MagicLinkService {
       } as FindOptionsWhere<Authenticatable>,
     })
 
-    const template = exists ? this.mailer.welcomeBack : this.mailer.welcome
+    const template = exists ? mailer.welcomeBack : mailer.welcome
     const html = template.html.replaceAll("{{token}}", token)
 
-    await this.transport.sendMail({
-      from: this.mailer.from,
+    await transport.sendMail({
+      from: mailer.from,
       to: email,
       subject: template.subject,
       html,

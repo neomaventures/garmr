@@ -1,4 +1,4 @@
-import { Authenticatable } from "@lib"
+import { Authenticatable, AuthenticatableProfile } from "@lib"
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm"
 
 @Entity()
@@ -11,4 +11,7 @@ export class User implements Authenticatable {
 
   @Column("simple-array", { default: "" })
   public permissions!: string[]
+
+  @Column("simple-json", { nullable: true })
+  public authProfile?: AuthenticatableProfile
 }

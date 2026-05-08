@@ -56,32 +56,33 @@ export interface CookieOptions {
 }
 
 /**
- * Configuration options for the Garmr authentication module.
- *
- * @typeParam T - The entity class implementing Authenticatable
- *
- * @example
- * ```typescript
- * GarmrModule.forRoot({
- *   secret: process.env.JWT_SECRET,
- *   expiresIn: '1h',
- *   entity: User,
- *   mailer: {
- *     host: 'smtp.example.com',
- *     port: 587,
- *     from: 'noreply@example.com',
- *     welcome: {
- *       subject: 'Welcome to MyApp',
- *       html: '<a href="https://myapp.com/auth?token={{token}}">Sign up</a>',
- *     },
- *     welcomeBack: {
- *       subject: 'Sign in to MyApp',
- *       html: '<a href="https://myapp.com/auth?token={{token}}">Sign in</a>',
- *     },
- *   },
- * })
- * ```
+ * Configuration options for magic link authentication.
  */
+export interface MagicLinkOptions {
+  /** Mailer configuration for sending magic link emails */
+  mailer: MailerOptions
+}
+
+/**
+ * Configuration options for Google OAuth authentication.
+ */
+export interface GoogleAuthOptions {
+  /** Google OAuth client ID */
+  clientId: string
+  /** Google OAuth client secret */
+  clientSecret: string
+  /** OAuth redirect URI */
+  redirectUri: string
+  /**
+   * Google OAuth token endpoint URL.
+   * Defaults to `https://oauth2.googleapis.com/token`.
+   *
+   * @warning This should not be overridden in production. It exists
+   * for testing purposes (e.g., pointing to a mock server).
+   */
+  tokenEndpoint?: string
+}
+
 /**
  * Configuration options for webhook signature verification.
  */
@@ -95,17 +96,67 @@ export interface WebhookOptions {
   secret: string
 }
 
-export interface GarmrOptions<T extends Authenticatable = Authenticatable> {
+/**
+ * Base configuration options shared by all Garmr auth strategies.
+ *
+ * @typeParam T - The entity class implementing Authenticatable
+ */
+interface GarmrBaseOptions<T extends Authenticatable = Authenticatable> {
   /** Secret key used to sign and verify JWTs */
   secret: string
   /** Token expiration time (e.g., "1h", "7d", or seconds as number) */
   expiresIn: jwt.SignOptions["expiresIn"]
   /** The entity class used for registration, authentication, and principal lookup */
   entity: new () => T
-  /** Mailer configuration for magic links */
-  mailer: MailerOptions
   /** Session cookie configuration */
   cookie?: CookieOptions
   /** Webhook signature verification configuration */
   webhook?: WebhookOptions
 }
+
+/**
+ * Configuration options for the Garmr authentication module.
+ *
+ * At least one authentication strategy (`magicLink` or `googleAuth`) must be provided.
+ *
+ * @typeParam T - The entity class implementing Authenticatable
+ *
+ * @example Magic link only
+ * ```typescript
+ * GarmrModule.forRoot({
+ *   secret: process.env.JWT_SECRET,
+ *   expiresIn: '1h',
+ *   entity: User,
+ *   magicLink: {
+ *     mailer: {
+ *       host: 'smtp.example.com',
+ *       port: 587,
+ *       from: 'noreply@example.com',
+ *       welcome: { subject: 'Welcome', html: '...' },
+ *       welcomeBack: { subject: 'Welcome back', html: '...' },
+ *     },
+ *   },
+ * })
+ * ```
+ *
+ * @example Both strategies
+ * ```typescript
+ * GarmrModule.forRoot({
+ *   secret: process.env.JWT_SECRET,
+ *   expiresIn: '1h',
+ *   entity: User,
+ *   magicLink: { mailer: { ... } },
+ *   googleAuth: {
+ *     clientId: process.env.GOOGLE_CLIENT_ID,
+ *     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+ *     redirectUri: 'https://myapp.com/auth/google/callback',
+ *   },
+ * })
+ * ```
+ */
+export type GarmrOptions<T extends Authenticatable = Authenticatable> =
+  GarmrBaseOptions<T> &
+    (
+      | { magicLink: MagicLinkOptions; googleAuth?: GoogleAuthOptions }
+      | { magicLink?: MagicLinkOptions; googleAuth: GoogleAuthOptions }
+    )

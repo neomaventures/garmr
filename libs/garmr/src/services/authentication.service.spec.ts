@@ -57,7 +57,7 @@ registrations.forEach(([name, register]) => {
             secret,
             expiresIn,
             entity: User,
-            mailer: {} as MailerOptions,
+            magicLink: { mailer: {} as MailerOptions },
           }),
         ],
       }).compile()

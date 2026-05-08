@@ -15,7 +15,7 @@ import { CookieAuthenticationMiddleware } from "./middlewares/cookie-authenticat
  *   secret: process.env.JWT_SECRET,
  *   expiresIn: '1h',
  *   entity: User,
- *   mailer: { ... },
+ *   magicLink: { mailer: { ... } },
  * })
  * ```
  *
@@ -27,7 +27,7 @@ import { CookieAuthenticationMiddleware } from "./middlewares/cookie-authenticat
  *     secret: config.get('JWT_SECRET'),
  *     expiresIn: '1h',
  *     entity: User,
- *     mailer: { ... },
+ *     magicLink: { mailer: { ... } },
  *   }),
  *   inject: [ConfigService],
  * })
