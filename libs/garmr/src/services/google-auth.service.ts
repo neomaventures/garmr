@@ -100,7 +100,7 @@ export class GoogleAuthService {
    * @throws {GoogleCodeExchangeException} If Google's token endpoint returns a non-OK HTTP response
    * @throws {GoogleServiceException} If Google's token endpoint returns a 5xx server error
    * @throws {GoogleNetworkException} If the fetch call itself fails (network error, DNS, timeout)
-   * @throws {GoogleTokenException} If the ID token is missing or has no email claim
+   * @throws {GoogleTokenException} If the ID token is missing, has no email claim, or has no sub claim
    * @throws {EmailNotVerifiedException} If the ID token has email_verified explicitly set to false
    * @throws {Error} If googleAuth is not configured
    *
@@ -157,7 +157,7 @@ export class GoogleAuthService {
     const tokenData = (await response.json()) as { id_token: string }
     // The ID token is received directly from Google's token endpoint over HTTPS
     // in a server-to-server exchange (not from a client). Signature verification
-    // is unnecessary in the auth code flow — the token's authenticity is guaranteed
+    // is unnecessary in the auth code flow — the token's authenticity is ensured
     // by the TLS connection and the client_secret used in the exchange.
     // See: https://developers.google.com/identity/openid-connect/openid-connect#obtainuserinfo
     const decoded = jwt.decode(tokenData.id_token) as Record<string, any> | null
@@ -171,7 +171,10 @@ export class GoogleAuthService {
       throw new EmailNotVerifiedException(email)
     }
 
-    const sub = (decoded?.sub as string) ?? ""
+    const sub = decoded?.sub as string | undefined
+    if (!sub) {
+      throw new GoogleTokenException("missing sub in ID token")
+    }
     const name = decoded?.name as string | undefined
     const picture = decoded?.picture as string | undefined
     const profile: GoogleProfile = { sub, name, picture }

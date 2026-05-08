@@ -203,6 +203,36 @@ appModules.forEach(([name, modulePath]) => {
       })
     })
 
+    describe("When the Google ID token is missing the sub claim", () => {
+      it("should respond with HTTP 401", async () => {
+        const code = google.code()
+        const secret = faker.string.alphanumeric(32)
+        const idTokenWithoutSub = jwt.sign(
+          {
+            iss: "https://accounts.google.com",
+            aud: google.aud(),
+            email: faker.internet.email(),
+            name: faker.person.fullName(),
+          },
+          secret,
+        )
+
+        await mockCodeExchangeApi(code, { id_token: idTokenWithoutSub })
+
+        const response = await request(app.getHttpServer())
+          .get("/auth/google/callback")
+          .query({ code })
+          .expect(UNAUTHORIZED)
+
+        expect(response.body).toMatchObject({
+          statusCode: UNAUTHORIZED,
+          message: "Google ID token error: missing sub in ID token",
+          reason: "missing sub in ID token",
+          error: "Unauthorized",
+        })
+      })
+    })
+
     describe("When the ID token is missing the email claim", () => {
       it("should respond with HTTP 401 with reason 'missing email in ID token'", async () => {
         const code = google.code()

@@ -748,7 +748,7 @@ public getReports() {}
 
 ### Events
 
-Both events include a `provider` property of type `AuthProvider` (`"magic-link" | "google"`) indicating which authentication method triggered the event.
+Both events include a `provider` property of type `AuthProvider` (`"magic-link" | "google" | "session"`) indicating which authentication method triggered the event.
 
 #### GarmrRegisteredEvent
 
@@ -770,7 +770,7 @@ export class NotificationService {
 
 #### GarmrAuthenticatedEvent
 
-Emitted when an existing user verifies a magic link, authenticates via session token, or signs in with Google OAuth.
+Emitted when an existing user verifies a magic link (provider `"magic-link"`), authenticates via session token (provider `"session"`), or signs in with Google OAuth (provider `"google"`).
 
 ### Interfaces
 
@@ -807,7 +807,7 @@ Provider-specific profile data stored on the authenticatable entity. Each key is
 - Error responses use a generic message -- internal details are logged server-side only
 - Email lookups are case-insensitive (normalized to lowercase)
 - Magic links expire after 15 minutes
-- Google ID tokens are decoded but not signature-verified, because they are received server-to-server over TLS in the auth code flow. The token's authenticity is guaranteed by the TLS connection and the `client_secret` used in the exchange
+- Google ID tokens are decoded but not signature-verified, because they are received directly from Google's token endpoint over TLS in a server-to-server exchange, not from a client. The token is trusted because it is obtained via an authenticated channel using the `client_secret`
 - Google accounts with unverified emails are rejected (`EmailNotVerifiedException`)
 
 ## License

@@ -78,7 +78,7 @@ export class AuthenticationService {
 
     this.eventEmitter.emit(
       GarmrAuthenticatedEvent.EVENT_NAME,
-      new GarmrAuthenticatedEvent(entity),
+      new GarmrAuthenticatedEvent(entity, "session"),
     )
 
     return entity

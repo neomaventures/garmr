@@ -395,6 +395,31 @@ registrations.forEach(([name, register]) => {
         })
       })
 
+      describe("Given the ID token is missing the sub claim", () => {
+        let service: GoogleAuthService
+
+        beforeEach(async () => {
+          const module = await buildModule(User, register)
+          service = module.get<GoogleAuthService>(GoogleAuthService)
+        })
+
+        it("should throw GoogleTokenException with reason 'missing sub in ID token'", async () => {
+          const code = faker.string.alphanumeric(20)
+          const idToken = jwt.sign(
+            { email: faker.internet.email(), name: faker.person.fullName() },
+            faker.string.alphanumeric(32),
+          )
+          await mockCodeExchangeApi(code, { id_token: idToken })
+
+          await expect(service.authenticate(code)).rejects.toMatchError(
+            GoogleTokenException,
+            {
+              reason: "missing sub in ID token",
+            },
+          )
+        })
+      })
+
       describe("Given the ID token is missing the email claim", () => {
         let service: GoogleAuthService
 
