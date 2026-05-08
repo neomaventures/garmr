@@ -57,7 +57,7 @@ registrations.forEach(([name, register]) => {
             secret,
             expiresIn,
             entity: User,
-            mailer: {} as MailerOptions,
+            magicLink: { mailer: {} as MailerOptions },
           }),
         ],
       }).compile()
@@ -95,7 +95,7 @@ registrations.forEach(([name, register]) => {
 
           expect(emitSpy).toHaveBeenCalledWith(
             GarmrAuthenticatedEvent.EVENT_NAME,
-            new GarmrAuthenticatedEvent(result),
+            new GarmrAuthenticatedEvent(result, "session"),
           )
         })
       })

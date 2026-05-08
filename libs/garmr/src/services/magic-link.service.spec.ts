@@ -83,7 +83,7 @@ registrations.forEach(([name, register]) => {
               secret,
               expiresIn: "1h",
               entity: User,
-              mailer: mailerOptions(),
+              magicLink: { mailer: mailerOptions() },
             }),
           ],
         })
@@ -174,7 +174,7 @@ registrations.forEach(([name, register]) => {
               secret,
               expiresIn: "1h",
               entity: User,
-              mailer: mailerOptions(),
+              magicLink: { mailer: mailerOptions() },
             }),
           ],
         }).compile()
@@ -340,7 +340,7 @@ registrations.forEach(([name, register]) => {
                 secret: fakeSecret,
                 expiresIn: "1h",
                 entity: User,
-                mailer: mailerOptions(),
+                magicLink: { mailer: mailerOptions() },
               }),
             ],
           }).compile()

@@ -45,7 +45,8 @@ const DEFAULT_OPTIONS: GarmrOptions = {
   secret: "jwt-secret",
   expiresIn: "1h",
   entity: User,
-  mailer: {} as any,
+  // Agent, why don't we have a type here?
+  magicLink: { mailer: {} as any },
   webhook: { secret: TEST_SECRET },
 }
 

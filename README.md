@@ -1,14 +1,15 @@
 # @neoma/garmr
 
-Passwordless authentication for NestJS applications. Garmr provides magic link authentication, JWT session management, cookie-based sessions, and route protection out of the box.
+Passwordless authentication for NestJS applications. Garmr provides magic link authentication, Google OAuth, JWT session management, cookie-based sessions, and route protection out of the box.
 
 ## Why Passwordless?
 
-Password authentication requires secure hashing, strength validation, reset flows, and breach checking. Magic links eliminate all of this complexity. The email IS the verification - simpler for developers, fewer security footguns.
+Password authentication requires secure hashing, strength validation, reset flows, and breach checking. Magic links and Google OAuth eliminate all of this complexity. The email IS the verification - simpler for developers, fewer security footguns.
 
 ## Features
 
 - Magic link authentication (send & verify)
+- Google OAuth auth code flow with account linking by verified email
 - JWT session tokens with HS256 algorithm enforcement and audience validation
 - Cookie-based sessions (httpOnly, secure, sameSite) with configurable options
 - Dual transport: Bearer token and cookie authentication middlewares
@@ -53,6 +54,28 @@ export class User implements Authenticatable {
 }
 ```
 
+If you are using Google OAuth and want to store provider profile data (e.g., Google `sub`, `name`, `picture`), add the optional `authProfile` column:
+
+```typescript
+import { Authenticatable, AuthenticatableProfile } from "@neoma/garmr"
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm"
+
+@Entity()
+export class User implements Authenticatable {
+  @PrimaryGeneratedColumn("uuid")
+  public id: string
+
+  @Column({ unique: true })
+  public email: string
+
+  @Column("simple-array", { default: "" })
+  public permissions: string[]
+
+  @Column("simple-json", { nullable: true })
+  public authProfile?: AuthenticatableProfile
+}
+```
+
 ### 2. Configure GarmrModule
 
 Import and configure `GarmrModule` in your application module. You can use `forRoot` with a static options object, or `forRootAsync` to resolve configuration via the NestJS DI container.
@@ -77,21 +100,23 @@ import { User } from "./user.entity"
       secret: process.env.JWT_SECRET,
       expiresIn: "1h",
       entity: User,
-      mailer: {
-        host: process.env.SMTP_HOST,
-        port: parseInt(process.env.SMTP_PORT),
-        from: "auth@yourapp.com",
-        welcome: {
-          subject: "Welcome to YourApp",
-          html: '<a href="https://yourapp.com/auth/verify?token={{token}}">Sign up</a>',
-        },
-        welcomeBack: {
-          subject: "Sign in to YourApp",
-          html: '<a href="https://yourapp.com/auth/verify?token={{token}}">Sign in</a>',
-        },
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
+      magicLink: {
+        mailer: {
+          host: process.env.SMTP_HOST,
+          port: parseInt(process.env.SMTP_PORT),
+          from: "auth@yourapp.com",
+          welcome: {
+            subject: "Welcome to YourApp",
+            html: '<a href="https://yourapp.com/auth/verify?token={{token}}">Sign up</a>',
+          },
+          welcomeBack: {
+            subject: "Sign in to YourApp",
+            html: '<a href="https://yourapp.com/auth/verify?token={{token}}">Sign in</a>',
+          },
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+          },
         },
       },
       cookie: {
@@ -128,21 +153,23 @@ import { User } from "./user.entity"
         secret: config.getOrThrow("JWT_SECRET"),
         expiresIn: "1h",
         entity: User,
-        mailer: {
-          host: config.getOrThrow("SMTP_HOST"),
-          port: config.getOrThrow<number>("SMTP_PORT"),
-          from: "auth@yourapp.com",
-          welcome: {
-            subject: "Welcome to YourApp",
-            html: '<a href="https://yourapp.com/auth/verify?token={{token}}">Sign up</a>',
-          },
-          welcomeBack: {
-            subject: "Sign in to YourApp",
-            html: '<a href="https://yourapp.com/auth/verify?token={{token}}">Sign in</a>',
-          },
-          auth: {
-            user: config.getOrThrow("SMTP_USER"),
-            pass: config.getOrThrow("SMTP_PASS"),
+        magicLink: {
+          mailer: {
+            host: config.getOrThrow("SMTP_HOST"),
+            port: config.getOrThrow<number>("SMTP_PORT"),
+            from: "auth@yourapp.com",
+            welcome: {
+              subject: "Welcome to YourApp",
+              html: '<a href="https://yourapp.com/auth/verify?token={{token}}">Sign up</a>',
+            },
+            welcomeBack: {
+              subject: "Sign in to YourApp",
+              html: '<a href="https://yourapp.com/auth/verify?token={{token}}">Sign in</a>',
+            },
+            auth: {
+              user: config.getOrThrow("SMTP_USER"),
+              pass: config.getOrThrow("SMTP_PASS"),
+            },
           },
         },
       }),
@@ -151,6 +178,55 @@ import { User } from "./user.entity"
   ],
 })
 export class AppModule {}
+```
+
+#### Google OAuth only
+
+```typescript
+GarmrModule.forRoot({
+  secret: process.env.JWT_SECRET,
+  expiresIn: "1h",
+  entity: User,
+  googleAuth: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    redirectUri: "https://yourapp.com/auth/google/callback",
+  },
+})
+```
+
+#### Both magic link and Google OAuth
+
+```typescript
+GarmrModule.forRoot({
+  secret: process.env.JWT_SECRET,
+  expiresIn: "1h",
+  entity: User,
+  magicLink: {
+    mailer: {
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT),
+      from: "auth@yourapp.com",
+      welcome: {
+        subject: "Welcome to YourApp",
+        html: '<a href="https://yourapp.com/auth/verify?token={{token}}">Sign up</a>',
+      },
+      welcomeBack: {
+        subject: "Sign in to YourApp",
+        html: '<a href="https://yourapp.com/auth/verify?token={{token}}">Sign in</a>',
+      },
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    },
+  },
+  googleAuth: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    redirectUri: "https://yourapp.com/auth/google/callback",
+  },
+})
 ```
 
 ### 3. Enable validation
@@ -239,6 +315,52 @@ export class ProfileController {
 4. Server validates token, creates user (if new) or finds existing user
 5. Server issues session JWT with `aud: "session"` and sets httpOnly cookie
 6. Subsequent requests authenticate via cookie or `Authorization: Bearer <token>` header
+
+## Google OAuth Flow
+
+1. Your frontend redirects the user to Google's OAuth consent screen
+2. Google redirects back to your callback URL with a `code` query parameter
+3. The `@GoogleCallback()` interceptor exchanges the code with Google's token endpoint server-to-server
+4. The ID token is decoded to extract the user's email, name, and picture
+5. The email is used to find an existing user or create a new one (same find-or-create-by-email pattern as magic links)
+6. If the entity has an `authProfile` column, Google profile data is written to it
+7. Your controller receives the result via `@GetGoogleAuthResult()` and issues a session
+
+### Account Linking
+
+Account linking happens automatically by verified email. If a user signs up via magic link with `alice@example.com` and later signs in with Google using the same email, they get the same user account. This works because both flows verify email ownership -- magic links by definition, and Google OAuth by checking the `email_verified` claim in the ID token.
+
+### Google OAuth Controller Example
+
+```typescript
+import {
+  GetGoogleAuthResult,
+  GoogleAuthResult,
+  GoogleCallback,
+  SessionService,
+} from "@neoma/garmr"
+import { Controller, Get, Res } from "@nestjs/common"
+import { Response } from "express"
+
+import { User } from "./user.entity"
+
+@Controller("auth/google")
+export class GoogleAuthController {
+  public constructor(private readonly sessionService: SessionService) {}
+
+  @Get("callback")
+  @GoogleCallback()
+  public handleCallback(
+    @GetGoogleAuthResult() result: GoogleAuthResult<User>,
+    @Res({ passthrough: true }) res: Response,
+  ): { token: string; user: User; isNewUser: boolean } {
+    const { token } = this.sessionService.create(res, result.entity)
+    return { token, user: result.entity, isNewUser: result.isNewUser }
+  }
+}
+```
+
+The `@GoogleCallback()` decorator applies the `GoogleCallbackInterceptor`, which extracts the `code` query parameter, exchanges it with Google, and attaches the `GoogleAuthResult` to the request. The `@GetGoogleAuthResult()` parameter decorator then extracts it for use in your handler.
 
 ## Example Requests
 
@@ -335,7 +457,8 @@ Configures the authentication module with a static options object. The module is
 | `secret` | `string` | JWT signing secret |
 | `expiresIn` | `string \| number` | Session token expiration (e.g., "1h", "7d") |
 | `entity` | `Type<Authenticatable>` | Your user entity class |
-| `mailer` | `MailerOptions` | Email configuration (see below) |
+| `magicLink` | `MagicLinkOptions` | Magic link configuration (optional -- at least one of `magicLink` or `googleAuth` is required) |
+| `googleAuth` | `GoogleAuthOptions` | Google OAuth configuration (optional -- at least one of `magicLink` or `googleAuth` is required) |
 | `cookie` | `CookieOptions` | Session cookie configuration (optional) |
 | `webhook` | `WebhookOptions` | Webhook signature verification configuration (optional) |
 
@@ -348,6 +471,12 @@ Configures the authentication module with options resolved via the NestJS DI con
 | `imports` | `any[]` | Modules to import (e.g., `ConfigModule`) |
 | `useFactory` | `(...args) => GarmrOptions \| Promise<GarmrOptions>` | Factory function that returns the options |
 | `inject` | `any[]` | Providers to inject into the factory |
+
+#### MagicLinkOptions
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `mailer` | `MailerOptions` | Mailer configuration for sending magic link emails |
 
 #### MailerOptions
 
@@ -367,6 +496,15 @@ Configures the authentication module with options resolved via the NestJS DI con
 |--------|------|-------------|
 | `subject` | `string` | Email subject line |
 | `html` | `string` | Email HTML body (use `{{token}}` placeholder) |
+
+#### GoogleAuthOptions
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `clientId` | `string` | — | Google OAuth client ID |
+| `clientSecret` | `string` | — | Google OAuth client secret |
+| `redirectUri` | `string` | — | OAuth redirect URI (must match your Google Cloud Console configuration) |
+| `tokenEndpoint` | `string` | `"https://oauth2.googleapis.com/token"` | Google OAuth token endpoint URL. Do not override in production -- this exists for testing purposes only (e.g., pointing to a mock server) |
 
 #### CookieOptions
 
@@ -390,6 +528,10 @@ Configures the authentication module with options resolved via the NestJS DI con
 
 - `send(email: string): Promise<void>` - Sends a magic link email (uses `welcome` template for new users, `welcomeBack` for existing)
 - `verify<T>(token: string): Promise<{ entity: T; isNewUser: boolean }>` - Validates token and returns/creates user
+
+#### GoogleAuthService
+
+- `authenticate<T>(code: string): Promise<GoogleAuthResult<T>>` - Exchanges a Google authorization code for user credentials. Finds or creates the user by email (same pattern as `MagicLinkService.verify()`). Returns the entity, an `isNewUser` flag, and the Google profile. If the entity has an `authProfile` column, Google profile data is persisted automatically.
 
 #### SessionService
 
@@ -514,6 +656,32 @@ public getProfile(@Principal() user: User): User {
 }
 ```
 
+#### GoogleCallback
+
+Method decorator that applies the `GoogleCallbackInterceptor`. Extracts the `code` query parameter from the request, exchanges it with Google's token endpoint via `GoogleAuthService`, and attaches the result to `req.googleAuthResult`. Use with `@GetGoogleAuthResult()` to extract the result in your handler.
+
+```typescript
+@Get("callback")
+@GoogleCallback()
+public handleCallback(@GetGoogleAuthResult() result: GoogleAuthResult<User>): void {
+  // result.entity, result.isNewUser, result.profile
+}
+```
+
+#### GetGoogleAuthResult
+
+Parameter decorator that extracts the `GoogleAuthResult` from the request. Must be used on routes decorated with `@GoogleCallback()`. Throws if `@GoogleCallback()` was not applied.
+
+```typescript
+@Get("callback")
+@GoogleCallback()
+public handleCallback(
+  @GetGoogleAuthResult() result: GoogleAuthResult<User>,
+): void {
+  // result.entity, result.isNewUser, result.profile
+}
+```
+
 #### RequiresPermission
 
 Enforces that the authenticated user has **all** of the specified permissions (AND logic). Automatically applies authentication and the permission guard.
@@ -570,14 +738,21 @@ public getReports() {}
 | `TokenFailedVerificationException` | 401 | JWT verification failed (expired, invalid signature) |
 | `IncorrectCredentialsException` | 401 | User not found for valid token |
 | `InvalidCredentialsException` | 401 | Token invalid, wrong audience, or malformed header |
+| `GoogleCodeExchangeException` | 401 | Google rejected the authorization code (4xx from token endpoint) |
+| `GoogleTokenException` | 401 | ID token missing or lacks email claim |
+| `GoogleServiceException` | 502 | Google returned a server error (5xx from token endpoint) |
+| `GoogleNetworkException` | 502 | Network failure reaching Google's token endpoint |
+| `EmailNotVerifiedException` | 403 | Google account email not verified |
 | `UnauthorizedRedirectException` | 401 | Unauthenticated request on a route with a redirect URL. Carries redirect metadata via `getRedirect()` for filters to handle |
 | `PermissionDeniedException` | 403 | User lacks required permission(s) |
 
 ### Events
 
+Both events include a `provider` property of type `AuthProvider` (`"magic-link" | "google" | "session"`) indicating which authentication method triggered the event.
+
 #### GarmrRegisteredEvent
 
-Emitted when a new user is created via magic link verification.
+Emitted when a new user is created via magic link verification or Google OAuth.
 
 ```typescript
 import { GarmrRegisteredEvent } from "@neoma/garmr"
@@ -587,6 +762,7 @@ import { OnEvent } from "@nestjs/event-emitter"
 export class NotificationService {
   @OnEvent(GarmrRegisteredEvent.EVENT_NAME)
   public async onRegistered(event: GarmrRegisteredEvent): Promise<void> {
+    console.log(`New user registered via ${event.provider}`)
     // Send welcome email, etc.
   }
 }
@@ -594,7 +770,7 @@ export class NotificationService {
 
 #### GarmrAuthenticatedEvent
 
-Emitted when an existing user verifies a magic link or authenticates via session token.
+Emitted when an existing user verifies a magic link (provider `"magic-link"`), authenticates via session token (provider `"session"`), or signs in with Google OAuth (provider `"google"`).
 
 ### Interfaces
 
@@ -605,20 +781,34 @@ interface Authenticatable {
   id: any
   email: string
   permissions?: string[]
+  authProfile?: AuthenticatableProfile
 }
 ```
 
-Implement this on any entity you want to authenticate. The `permissions` field is optional — only needed if you use the permission decorators.
+Implement this on any entity you want to authenticate. The `permissions` field is optional -- only needed if you use the permission decorators. The `authProfile` field is optional -- only needed if you want to store provider-specific metadata (e.g., Google profile data).
+
+#### AuthenticatableProfile
+
+```typescript
+interface AuthenticatableProfile {
+  google?: { sub: string; name?: string; picture?: string }
+  [provider: string]: Record<string, any> | undefined
+}
+```
+
+Provider-specific profile data stored on the authenticatable entity. Each key is a provider name (e.g., `"google"`) mapping to provider-specific claims. When Google OAuth authenticates a user and the entity has an `authProfile` column, the `google` key is populated automatically with the `sub`, `name`, and `picture` from the ID token.
 
 ## Security
 
-- JWTs are signed and verified with HS256 only — other algorithms are rejected
-- Magic link tokens use `aud: "magic-link"`, session tokens use `aud: "session"` — cross-use is prevented
+- JWTs are signed and verified with HS256 only -- other algorithms are rejected
+- Magic link tokens use `aud: "magic-link"`, session tokens use `aud: "session"` -- cross-use is prevented
 - Session cookies are httpOnly (not accessible to JavaScript), secure (HTTPS only), and SameSite=Lax by default
 - Cookie `Max-Age` is automatically aligned with JWT expiry
-- Error responses use a generic message — internal details are logged server-side only
+- Error responses use a generic message -- internal details are logged server-side only
 - Email lookups are case-insensitive (normalized to lowercase)
 - Magic links expire after 15 minutes
+- Google ID tokens are decoded but not signature-verified, because they are received directly from Google's token endpoint over TLS in a server-to-server exchange, not from a client. The token is trusted because it is obtained via an authenticated channel using the `client_secret`
+- Google accounts with unverified emails are rejected (`EmailNotVerifiedException`)
 
 ## License
 

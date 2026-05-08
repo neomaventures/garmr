@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `GoogleServiceException` (502 Bad Gateway) thrown when Google's token endpoint returns a 5xx server error — `GoogleNetworkException` is now reserved for actual network failures (fetch throws)
+- `EmailNotVerifiedException` (403 Forbidden) thrown when a Google ID token has `email_verified: false`
+- Google OAuth auth code flow (`GoogleAuthService`, `@GoogleCallback()`, `@GetGoogleAuthResult()`)
+- `GoogleAuthOptions` configuration for Google OAuth
+- `MagicLinkOptions` wrapper for magic link configuration
+- `GoogleCodeExchangeException`, `GoogleNetworkException`, and `GoogleTokenException` for granular OAuth error handling
+- `AuthenticatableProfile` interface for provider-keyed profile data
+- Optional `authProfile` property on `Authenticatable` for storing provider metadata
+- `AuthProvider` type (`"magic-link" | "google"`) on `GarmrRegisteredEvent` and `GarmrAuthenticatedEvent`
+- `GoogleCallbackInterceptor` for intercepting OAuth callbacks
+- MockServer-based Google OAuth test fixtures
+
+### Changed (BREAKING)
+- `GarmrOptions.mailer` renamed to `GarmrOptions.magicLink.mailer` — update `forRoot()`/`forRootAsync()` config accordingly
+- `GarmrOptions` now requires at least one of `magicLink` or `googleAuth` (enforced via TypeScript union type)
+- `MagicLinkService` transport initialization is now lazy (deferred to first `send()` call)
+
 ## [0.9.1] - 2026-04-29
 
 ### Changed

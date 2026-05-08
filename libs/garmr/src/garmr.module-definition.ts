@@ -2,7 +2,9 @@ import { ConfigurableModuleBuilder } from "@nestjs/common"
 import { EventEmitterModule } from "@nestjs/event-emitter"
 
 import { GarmrOptions, GARMR_OPTIONS } from "./garmr.options"
+import { GoogleCallbackInterceptor } from "./interceptors/google-callback.interceptor"
 import { AuthenticationService } from "./services/authentication.service"
+import { GoogleAuthService } from "./services/google-auth.service"
 import { MagicLinkService } from "./services/magic-link.service"
 import { PermissionService } from "./services/permission.service"
 import { SessionService } from "./services/session.service"
@@ -10,6 +12,8 @@ import { TokenService } from "./services/token.service"
 
 const GARMR_PROVIDERS = [
   AuthenticationService,
+  GoogleAuthService,
+  GoogleCallbackInterceptor,
   MagicLinkService,
   PermissionService,
   SessionService,

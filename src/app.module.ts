@@ -17,21 +17,23 @@ import { User } from "./user.entity"
       secret: process.env.GARMR_SECRET!,
       expiresIn: "1h",
       entity: User,
-      mailer: {
-        host: process.env.SMTP_HOST!,
-        port: parseInt(process.env.SMTP_PORT!),
-        from: process.env.MAGIC_LINK_FROM!,
-        welcome: {
-          subject: process.env.MAGIC_LINK_WELCOME_SUBJECT!,
-          html: `<a href="${process.env.APP_URL!}/magic-link/verify?token={{token}}">Sign up</a>`,
-        },
-        welcomeBack: {
-          subject: process.env.MAGIC_LINK_WELCOME_BACK_SUBJECT!,
-          html: `<a href="${process.env.APP_URL!}/magic-link/verify?token={{token}}">Sign in</a>`,
-        },
-        auth: {
-          user: process.env.MAILPIT_AUTH_USER!,
-          pass: process.env.MAILPIT_AUTH_PASS!,
+      magicLink: {
+        mailer: {
+          host: process.env.SMTP_HOST!,
+          port: parseInt(process.env.SMTP_PORT!),
+          from: process.env.MAGIC_LINK_FROM!,
+          welcome: {
+            subject: process.env.MAGIC_LINK_WELCOME_SUBJECT!,
+            html: `<a href="${process.env.APP_URL!}/magic-link/verify?token={{token}}">Sign up</a>`,
+          },
+          welcomeBack: {
+            subject: process.env.MAGIC_LINK_WELCOME_BACK_SUBJECT!,
+            html: `<a href="${process.env.APP_URL!}/magic-link/verify?token={{token}}">Sign in</a>`,
+          },
+          auth: {
+            user: process.env.MAILPIT_AUTH_USER!,
+            pass: process.env.MAILPIT_AUTH_PASS!,
+          },
         },
       },
     }),

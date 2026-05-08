@@ -1,4 +1,5 @@
 import { Authenticatable } from "../interfaces/authenticatable.interface"
+import { AuthProvider } from "../types/auth-provider"
 
 /**
  * Emitted after successful registration.
@@ -8,6 +9,7 @@ import { Authenticatable } from "../interfaces/authenticatable.interface"
  * @OnEvent('garmr.registered')
  * async handleRegistered(event: GarmrRegisteredEvent<User>) {
  *   await this.emailService.sendWelcome(event.entity.email)
+ *   console.log(`Registered via ${event.provider}`)
  * }
  * ```
  *
@@ -16,5 +18,13 @@ import { Authenticatable } from "../interfaces/authenticatable.interface"
  */
 export class GarmrRegisteredEvent<T extends Authenticatable> {
   public static readonly EVENT_NAME = "garmr.registered"
-  public constructor(public readonly entity: T) {}
+
+  /**
+   * @param entity - The newly registered entity
+   * @param provider - The authentication provider that triggered registration (defaults to "magic-link")
+   */
+  public constructor(
+    public readonly entity: T,
+    public readonly provider: AuthProvider = "magic-link",
+  ) {}
 }

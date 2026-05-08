@@ -1,4 +1,5 @@
 import { Authenticatable } from "../interfaces/authenticatable.interface"
+import { AuthProvider } from "../types/auth-provider"
 
 /**
  * Emitted after successful authentication.
@@ -8,6 +9,7 @@ import { Authenticatable } from "../interfaces/authenticatable.interface"
  * @OnEvent('garmr.authenticated')
  * async handleAuthenticated(event: GarmrAuthenticatedEvent<User>) {
  *   await this.analyticsService.trackLogin(event.entity.id)
+ *   console.log(`Authenticated via ${event.provider}`)
  * }
  * ```
  *
@@ -16,5 +18,13 @@ import { Authenticatable } from "../interfaces/authenticatable.interface"
  */
 export class GarmrAuthenticatedEvent<T extends Authenticatable> {
   public static readonly EVENT_NAME = "garmr.authenticated"
-  public constructor(public readonly entity: T) {}
+
+  /**
+   * @param entity - The authenticated entity
+   * @param provider - The authentication provider that triggered authentication (defaults to "magic-link")
+   */
+  public constructor(
+    public readonly entity: T,
+    public readonly provider: AuthProvider = "magic-link",
+  ) {}
 }
