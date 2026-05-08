@@ -7,16 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-05-08
+
 ### Added
-- `GoogleServiceException` (502 Bad Gateway) thrown when Google's token endpoint returns a 5xx server error — `GoogleNetworkException` is now reserved for actual network failures (fetch throws)
-- `EmailNotVerifiedException` (403 Forbidden) thrown when a Google ID token has `email_verified: false`
 - Google OAuth auth code flow (`GoogleAuthService`, `@GoogleCallback()`, `@GetGoogleAuthResult()`)
 - `GoogleAuthOptions` configuration for Google OAuth
 - `MagicLinkOptions` wrapper for magic link configuration
-- `GoogleCodeExchangeException`, `GoogleNetworkException`, and `GoogleTokenException` for granular OAuth error handling
+- `AuthProvider` type (`"magic-link" | "google" | "session"`) — standalone export for typing event listeners and consumer code
 - `AuthenticatableProfile` interface for provider-keyed profile data
 - Optional `authProfile` property on `Authenticatable` for storing provider metadata
-- `AuthProvider` type (`"magic-link" | "google"`) on `GarmrRegisteredEvent` and `GarmrAuthenticatedEvent`
+- `GoogleCodeExchangeException` (401) for rejected authorization codes (Google 4xx)
+- `GoogleServiceException` (502) for Google token endpoint server errors (5xx)
+- `GoogleNetworkException` (502) for network failures reaching Google
+- `GoogleTokenException` (401) for missing or malformed ID tokens
+- `EmailNotVerifiedException` (403) for Google accounts with `email_verified: false`
 - `GoogleCallbackInterceptor` for intercepting OAuth callbacks
 - MockServer-based Google OAuth test fixtures
 
@@ -24,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `GarmrOptions.mailer` renamed to `GarmrOptions.magicLink.mailer` — update `forRoot()`/`forRootAsync()` config accordingly
 - `GarmrOptions` now requires at least one of `magicLink` or `googleAuth` (enforced via TypeScript union type)
 - `MagicLinkService` transport initialization is now lazy (deferred to first `send()` call)
+- `AuthenticationService.authenticate()` now emits `GarmrAuthenticatedEvent` with `provider: "session"` (previously defaulted to `"magic-link"`)
 
 ## [0.9.1] - 2026-04-29
 
@@ -180,7 +185,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Setup script for placeholder replacement
 - Comprehensive README documentation
 
-[Unreleased]: https://github.com/shipdventures/neoma-garmr/compare/v0.9.1...HEAD
+[Unreleased]: https://github.com/shipdventures/neoma-garmr/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/shipdventures/neoma-garmr/compare/v0.9.1...v0.10.0
 [0.9.1]: https://github.com/shipdventures/neoma-garmr/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/shipdventures/neoma-garmr/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/shipdventures/neoma-garmr/compare/v0.7.0...v0.8.0
